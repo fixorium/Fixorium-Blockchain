@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blockchain Example</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.9-1/crypto-js.js"></script>
+</head>
+<body>
+    <h1>Blockchain Example</h1>
+    <script>
+        class Blockchain {
+            constructor() {
+                this.chain = [];
+                this.pendingTransactions = [];
+            }
+
+            addTransaction(transaction) {
+                this.pendingTransactions.push(transaction);
+            }
+
+            minePendingTransactions(miningRewardAddress) {
+                const block = {
+                    transactions: this.pendingTransactions,
+                    timestamp: Date.now()
+                };
+                this.chain.push(block);
+                this.pendingTransactions = [];
+                this.addTransaction(new Transaction(null, miningRewardAddress, 100));
+            }
+
+            getBalanceOfAddress(address) {
+                let balance = 0;
+                for (const block of this.chain) {
+                    for (const trans of block.transactions) {
+                        if (trans.sender === address) {
+                            balance -= trans.amount;
+                        }
+                        if (trans.recipient === address) {
+                            balance += trans.amount;
+                        }
+                    }
+                }
+                return balance;
+            }
+        }
+
+        class Transaction {
+            constructor(sender, recipient, amount) {
+                this.sender = sender;
+                this.recipient = recipient;
+                this.amount = amount;
+                this.signature = null;
+            }
+
+            signTransaction(privateKey) {
+                this.signature = CryptoJS.HmacSHA256(this.sender + this.recipient + this.amount, privateKey).toString();
+            }
+        }
+
+        const myBlockchain = new Blockchain();
+        const keyPair = { publicKey: 'myPublicKey', privateKey: 'myPrivateKey' }; // Replace with actual key generation
+        const myAddress = keyPair.publicKey;
+
+        const transaction1 = new Transaction(myAddress, 'recipientAddress', 50);
+        transaction1.signTransaction(keyPair.privateKey);
+        myBlockchain.addTransaction(transaction1);
+
+        console.log('Mining...');
+        myBlockchain.minePendingTransactions(myAddress);
+
+        console.log(`Balance of my address: ${myBlockchain.getBalanceOfAddress(myAddress)}`);
+    </script>
+</body>
+</html>
