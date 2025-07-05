@@ -1,18 +1,21 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Blockchain Example</title>
+    <title>Fixorium Blockchain Token Deployment</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.9-1/crypto-js.js"></script>
 </head>
 <body>
-    <h1>Blockchain Example</h1>
+    <h1>Fixorium Blockchain Token Deployment</h1>
     <script>
-        class Blockchain {
+        class FixoriumBlockchain {
             constructor() {
                 this.chain = [];
                 this.pendingTransactions = [];
+                this.tokenSupply = 100000000;
+                this.autoBurnRate = 0.1; // 10%
+                this.burnedTokens = 0;
             }
 
             addTransaction(transaction) {
@@ -26,7 +29,14 @@
                 };
                 this.chain.push(block);
                 this.pendingTransactions = [];
+                this.burnTokens();
                 this.addTransaction(new Transaction(null, miningRewardAddress, 100));
+            }
+
+            burnTokens() {
+                const tokensToBurn = this.tokenSupply * this.autoBurnRate;
+                this.burnedTokens += tokensToBurn;
+                this.tokenSupply -= tokensToBurn;
             }
 
             getBalanceOfAddress(address) {
@@ -43,6 +53,10 @@
                 }
                 return balance;
             }
+
+            showTotalAssets() {
+                return this.tokenSupply - this.burnedTokens;
+            }
         }
 
         class Transaction {
@@ -58,18 +72,19 @@
             }
         }
 
-        const myBlockchain = new Blockchain();
+        const fixoriumBlockchain = new FixoriumBlockchain();
         const keyPair = { publicKey: 'myPublicKey', privateKey: 'myPrivateKey' }; // Replace with actual key generation
         const myAddress = keyPair.publicKey;
 
         const transaction1 = new Transaction(myAddress, 'recipientAddress', 50);
         transaction1.signTransaction(keyPair.privateKey);
-        myBlockchain.addTransaction(transaction1);
+        fixoriumBlockchain.addTransaction(transaction1);
 
         console.log('Mining...');
-        myBlockchain.minePendingTransactions(myAddress);
+        fixoriumBlockchain.minePendingTransactions(myAddress);
 
-        console.log(`Balance of my address: ${myBlockchain.getBalanceOfAddress(myAddress)}`);
+        console.log(`Balance of my address: ${fixoriumBlockchain.getBalanceOfAddress(myAddress)}`);
+        console.log(`Total assets after burn: ${fixoriumBlockchain.showTotalAssets()}`);
     </script>
 </body>
 </html>
