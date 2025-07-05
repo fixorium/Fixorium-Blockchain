@@ -1,33 +1,17 @@
- **contracts/FixoriumContract.sol**
+ const Blockchain = require('./blockchain/Blockchain');
+const Transaction = require('./transactions/Transaction');
+const CryptoUtils = require('./utils/CryptoUtils');
 
-```solidity
-// SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+const myBlockchain = new Blockchain();
 
-contract FixoriumContract {
-    address public owner;
+const keyPair = CryptoUtils.generateKeyPair();
+const myAddress = keyPair.publicKey;
 
-    mapping(address => uint256) public balances;
+const transaction1 = new Transaction(myAddress, 'recipientAddress', 50);
+transaction1.signTransaction(keyPair.privateKey);
+myBlockchain.addTransaction(transaction1);
 
-    event Transfer(address indexed from, address indexed to, uint256 amount);
+console.log('Mining...');
+myBlockchain.minePendingTransactions(myAddress);
 
-    constructor() {
-        owner = msg.sender;
-    }
-
-    function mint(address to, uint256 amount) public {
-        require(msg.sender == owner, "Only owner can mint tokens");
-        balances[to] += amount;
-    }
-
-    function transfer(address to, uint256 amount) public {
-        require(balances[msg.sender] >= amount, "Insufficient balance");
-        balances[msg.sender] -= amount;
-        balances[to] += amount;
-        emit Transfer(msg.sender, to, amount);
-    }
-
-    function balanceOf(address account) public view returns (uint256) {
-        return balances[account];
-    }
-}
+console.log(`Balance of my address: ${myBlockchain.getBalanceOfAddress(myAddress)}`);
